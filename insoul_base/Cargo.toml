@@ -13,7 +13,8 @@ serde_json = "*"
 near-sdk = "4.0.0"
 near-contract-standards = "4.0.0"
 soul_token = { path = "../soul_token" }
-user_token = { path = "../user_token" }
+subtoken = { path = "../subtoken" }
+soulbound = { path = "../soulbound" }
 
 [profile.release]
 codegen-units = 1

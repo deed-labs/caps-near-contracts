@@ -25,11 +25,11 @@ fn create_user() {
             .build());
 
     let mut contract = InsoulBase::new(accounts(1), accounts(2));
-    contract.create_user("John Snow".to_string());
+    contract.create_soulbound("John Snow".to_string());
 
     assert_eq!(
         "John Snow".to_string(),
-        contract.get_user(accounts(1)).unwrap().name
+        contract.get_soulbound(accounts(1)).unwrap().name
     );
 }
 
@@ -45,9 +45,7 @@ fn add_news() {
             .build());
 
     let mut contract = InsoulBase::new(accounts(1), accounts(2));
-    let mut user = contract.create_user("John Snow".to_string());
-    user.add_news("died and resurrected".to_string());
-
+    let mut user = contract.create_soulbound("John Snow".to_string());
 
     assert_eq!(1, user.news.len());
 }

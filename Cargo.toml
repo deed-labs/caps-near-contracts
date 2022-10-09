@@ -3,5 +3,6 @@
 members = [
     "insoul_base",
     "soul_token",
-    "user_token"
+    "subtoken",
+    "soulbound"
 ]

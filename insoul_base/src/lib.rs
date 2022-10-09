@@ -1,8 +1,8 @@
-mod user;
-
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LookupMap;
 use near_sdk::{env, near_bindgen, AccountId};
+use soulbound::Soulbound;
+use user_token::SubToken;
 use crate::user::*;
 
 #[near_bindgen]
@@ -10,7 +10,7 @@ use crate::user::*;
 pub struct InsoulBase {
     owner_id: AccountId,
     soul_token: AccountId,
-    users: LookupMap<AccountId, AccountId>, // user account id -> token account id
+    soulbounds: LookupMap<AccountId, Soulbound>,
 }
 
 #[near_bindgen]
@@ -22,21 +22,20 @@ impl InsoulBase {
         Self {
             owner_id,
             soul_token,
-            users: LookupMap::new(b"r".to_vec())
+            soulbounds: LookupMap::new(b"r".to_vec())
         }
     }
 
-    pub fn create_user(&mut self, name: String) -> User {
+    pub fn create_soulbound(&mut self, name: String) -> User {
         let account_id = env::signer_account_id();
 
-        let user = User::new(name);
-        self.users.insert(&account_id, &user);
+        // TODO
 
         user
     }
 
-    pub fn get_user(&self, account_id: AccountId) -> Option<User> {
-        return self.users.get(&account_id);
+    pub fn get_soulbound(&self, account_id: AccountId) -> Option<User> {
+        return self.soulbounds.get(&account_id);
     }
 }
 
