@@ -2,5 +2,6 @@
 
 members = [
     "insoul_base",
-    "soul_token"
+    "soul_token",
+    "user_token"
 ]
