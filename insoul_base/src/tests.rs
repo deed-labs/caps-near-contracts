@@ -24,7 +24,7 @@ fn create_user() {
             .predecessor_account_id(accounts(1))
             .build());
 
-    let mut contract = InsoulBase::new(accounts(1));
+    let mut contract = InsoulBase::new(accounts(1), accounts(2));
     contract.create_user("John Snow".to_string());
 
     assert_eq!(
@@ -44,7 +44,7 @@ fn add_news() {
             .predecessor_account_id(accounts(1))
             .build());
 
-    let mut contract = InsoulBase::new(accounts(1));
+    let mut contract = InsoulBase::new(accounts(1), accounts(2));
     let mut user = contract.create_user("John Snow".to_string());
     user.add_news("died and resurrected".to_string());
 

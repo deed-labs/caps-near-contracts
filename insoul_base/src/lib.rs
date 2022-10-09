@@ -9,17 +9,19 @@ use crate::user::*;
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct InsoulBase {
     owner_id: AccountId,
-    users: LookupMap<AccountId, User>,
+    soul_token: AccountId,
+    users: LookupMap<AccountId, AccountId>, // user account id -> token account id
 }
 
 #[near_bindgen]
 impl InsoulBase {
     #[init]
-    pub fn new(owner_id: AccountId) -> Self {
+    pub fn new(owner_id: AccountId, soul_token: AccountId) -> Self {
         assert!(!env::state_exists(), "Already initialized");
 
         Self {
             owner_id,
+            soul_token,
             users: LookupMap::new(b"r".to_vec())
         }
     }
