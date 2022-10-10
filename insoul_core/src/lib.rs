@@ -2,19 +2,18 @@ use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LookupMap;
 use near_sdk::{env, near_bindgen, AccountId};
 use soulbound::Soulbound;
-use user_token::SubToken;
-use crate::user::*;
+use subtoken::SubToken;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct InsoulBase {
+pub struct InsoulCore {
     owner_id: AccountId,
     soul_token: AccountId,
     soulbounds: LookupMap<AccountId, Soulbound>,
 }
 
 #[near_bindgen]
-impl InsoulBase {
+impl InsoulCore {
     #[init]
     pub fn new(owner_id: AccountId, soul_token: AccountId) -> Self {
         assert!(!env::state_exists(), "Already initialized");
