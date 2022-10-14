@@ -1,11 +1,11 @@
 {
-  "name": "rust-status-message-builder",
+  "name": "insoul-core",
   "version": "1.0.0",
-  "description": "Compiles NEAR Protocol example of setting and retrieving a status message per NEAR account",
+  "description": "",
   "scripts": {
     "build": "rustup target add wasm32-unknown-unknown && cargo build --target wasm32-unknown-unknown --release",
     "build:web": "parcel build ./frontend/index.html --public-url ./ --no-minify",
-    "postbuild": "cp ./target/wasm32-unknown-unknown/release/status_message.wasm ./res/",
+    "postbuild": "cp ./target/wasm32-unknown-unknown/release/*.wasm ./res/",
     "deploy:dev": "npm run build && near dev-deploy res/status_message.wasm",
     "dev": "npm run deploy:dev && npm start",
     "start": "npm run build && npm run build:web && env-cmd -f ./neardev/dev-account.env parcel ./frontend/index.html",

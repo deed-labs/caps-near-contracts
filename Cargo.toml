@@ -6,3 +6,7 @@ members = [
     "subtoken",
     "soulbound"
 ]
+
+exclude  = [
+    "integration-tests"
+]

@@ -48,8 +48,8 @@ impl SubToken {
     }
 }
 
-near_contract_standards::impl_fungible_token_core!(SoulToken, token, on_tokens_burned);
-near_contract_standards::impl_fungible_token_storage!(SoulToken, token, on_account_closed);
+near_contract_standards::impl_fungible_token_core!(SubToken, token, on_tokens_burned);
+near_contract_standards::impl_fungible_token_storage!(SubToken, token, on_account_closed);
 
 #[near_bindgen]
 impl FungibleTokenMetadataProvider for SubToken {
@@ -57,6 +57,3 @@ impl FungibleTokenMetadataProvider for SubToken {
         self.metadata.get().unwrap()
     }
 }
-
-#[cfg(test)]
-mod tests;

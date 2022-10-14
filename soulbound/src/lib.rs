@@ -1,10 +1,9 @@
 use near_contract_standards::non_fungible_token::core::NonFungibleTokenCore;
 use near_contract_standards::non_fungible_token::metadata::{NFTContractMetadata, NonFungibleTokenMetadataProvider};
 use near_contract_standards::non_fungible_token::{NonFungibleToken, Token, TokenId};
-use near_sdk::{AccountId, env, near_bindgen, PanicOnDefault, Promise, PromiseOrValue};
+use near_sdk::{AccountId, env, near_bindgen, PanicOnDefault, Promise, PromiseOrValue, BorshStorageKey};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LazyOption;
-use near_sdk::PromiseOrValue::Value;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
@@ -48,13 +47,11 @@ impl Soulbound {
  */
 impl NonFungibleTokenCore for Soulbound {
     fn nft_transfer(&mut self, _: AccountId, _: TokenId, _: Option<u64>, _: Option<String>) {
-        assert!(true, "Soulbound can not be transferred");
+        env::panic_str("Soulbound can not be transferred");
     }
 
     fn nft_transfer_call(&mut self, _: AccountId, _: TokenId, _: Option<u64>, _: Option<String>, _: String) -> PromiseOrValue<bool> {
-        assert!(true, "Soulbound can not be transferred");
-
-        Value(false)
+        env::panic_str("Soulbound can not be transferred");
     }
 
     fn nft_token(&self, token_id: TokenId) -> Option<Token> {
