@@ -4,7 +4,8 @@ members = [
     "insoul_core",
     "soul_token",
     "subtoken",
-    "soulbound"
+    "soulbound",
+    "common"
 ]
 
 exclude  = [
