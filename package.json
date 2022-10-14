@@ -5,7 +5,7 @@
   "scripts": {
     "build": "rustup target add wasm32-unknown-unknown && cargo build --target wasm32-unknown-unknown --release",
     "build:web": "parcel build ./frontend/index.html --public-url ./ --no-minify",
-    "postbuild": "cp ./target/wasm32-unknown-unknown/release/*.wasm ./res/",
+    "postbuild": "mkdir -p ./wasm/ && cp -rf ./target/wasm32-unknown-unknown/release/*.wasm ./wasm/",
     "deploy:dev": "npm run build && near dev-deploy res/status_message.wasm",
     "dev": "npm run deploy:dev && npm start",
     "start": "npm run build && npm run build:web && env-cmd -f ./neardev/dev-account.env parcel ./frontend/index.html",

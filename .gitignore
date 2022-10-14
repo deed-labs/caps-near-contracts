@@ -7,7 +7,7 @@ dist
 package-lock.json
 res/**
 .cargo
-
+wasm
 # IDE
 .idea
 
