@@ -1,5 +1,6 @@
 import { Worker, NEAR, NearAccount } from "near-workspaces";
 import anyTest, { TestFn } from "ava";
+import {DEPLOY_SOULBOUND_GAS, failPromiseRejection} from "./utils";
 
 const test = anyTest as TestFn<{
   worker: Worker;
@@ -12,9 +13,14 @@ test.beforeEach(async (t) => {
 
   // deploy contract
   const root = worker.rootAccount;
+
+  // FIXME: replace soul token account with actual deployed contract id
+  const soulToken = await root.createSubAccount("soul", {
+    initialBalance: NEAR.parse("30 N").toJSON(),
+  });
   const contract = await root.devDeploy(
-    "./res/status_message.wasm",
-    { initialBalance: NEAR.parse("30 N").toJSON() }
+    "./wasm/insoul_core.wasm",
+    { method: "new", args: {soul_token_id: soulToken}, initialBalance: NEAR.parse("30 N").toJSON() }
   );
 
   // some test accounts
@@ -40,26 +46,14 @@ test.afterEach(async (t) => {
   });
 });
 
-test("set get message", async (t) => {
+test("create soulbound", async (t) => {
   const { contract, alice } = t.context.accounts;
-  await alice.call(contract, "set_status", { message: "hello" });
-  const aliceStatus = await contract.view("get_status", { account_id: alice });
-  t.is(aliceStatus, "hello");
+  await alice.call(contract, "create_soulbound",
+      {
+        metadata: { spec: "sbt-1.0", name: "john_snow", symbol: "JSSB" }
+      },
+      { gas: DEPLOY_SOULBOUND_GAS }
+  ).catch(failPromiseRejection(t, "creating soulbound"));
+
 });
 
-test("get nonexistent message", async (t) => {
-  const { root, contract } = t.context.accounts;
-  const message: null = await contract.view("get_status", {
-    account_id: root,
-  });
-  t.is(message, null);
-});
-
-test("root and alice have different statuses", async (t) => {
-  const { root, contract, alice } = t.context.accounts;
-  await root.call(contract, "set_status", { message: "world" });
-  const rootStatus = await contract.view("get_status", { account_id: root });
-  t.is(rootStatus, "world");
-  const aliceStatus = await contract.view("get_status", { account_id: alice });
-  t.is(aliceStatus, null);
-});

@@ -5,9 +5,5 @@ members = [
     "soul_token",
     "subtoken",
     "soulbound",
-    "common"
-]
-
-exclude  = [
-    "integration-tests"
+    "deps"
 ]

@@ -1,19 +1,19 @@
-use std::borrow::Borrow;
-use std::fmt::format;
 use std::str::FromStr;
 use near_contract_standards::non_fungible_token::metadata::NFTContractMetadata;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LookupMap;
-use near_sdk::{env, near_bindgen, AccountId, Promise, PublicKey, Gas};
-use common::soulbound_init_args::SoulboundInitArgs;
+use near_sdk::{env, near_bindgen, AccountId, Promise, PublicKey, Gas, assert_one_yocto, is_promise_success};
+use deps::common::{SoulboundInitArgs};
+use deps::constants::gas;
+use deps::interfaces::core_self;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct InsoulCore {
-    owner_id: AccountId,
-    soul_token: AccountId,
-    soulbounds: LookupMap<AccountId, AccountId>,
-    admin_public_key: PublicKey
+    pub owner_id: AccountId,
+    pub soul_token_id: AccountId,
+    pub soulbounds: LookupMap<AccountId, AccountId>,
+    pub admin_public_key: PublicKey
 }
 
 impl Default for InsoulCore {
@@ -24,14 +24,32 @@ impl Default for InsoulCore {
 
 #[near_bindgen]
 impl InsoulCore {
+    pub fn assert_only_owner(&self) {
+        assert_one_yocto();
+        assert_eq!(
+            env::predecessor_account_id(),
+            self.owner_id,
+            "Only contract owner can call this method"
+        );
+    }
+
+    /// Only one `Soulbound` can be created and linked to the account.
+    pub fn assert_soulbound_not_exists(&self) {
+        assert!(
+            !self.soulbounds.contains_key(&env::predecessor_account_id()),
+            "Soulbound for the account already exists"
+        );
+    }
+
     #[init]
-    pub fn new(owner_id: AccountId, soul_token: AccountId) -> Self {
+    pub fn new(soul_token_id: AccountId) -> Self {
         assert!(!env::state_exists(), "Already initialized");
 
         Self {
-            owner_id,
-            soul_token,
-            soulbounds: LookupMap::new(b"r".to_vec())
+            owner_id: env::predecessor_account_id(),
+            soul_token_id,
+            soulbounds: LookupMap::new(b"r".to_vec()),
+            admin_public_key: env::signer_account_pk(),
         }
     }
 
@@ -43,17 +61,20 @@ impl InsoulCore {
         owner_id: AccountId,
         sb_account_id: AccountId
     ) {
-        // TODO
+        if is_promise_success() {
+            self.soulbounds.insert(&sb_creator_id, &sb_account_id);
+       } else {
+           env::panic_str("soulbound deployment failed");
+       }
     }
 
     pub fn create_soulbound(&mut self, metadata: NFTContractMetadata) -> Promise {
-        let account_id = env::signer_account_id();
+        self.assert_soulbound_not_exists();
 
-        assert!(!self.soulbounds.contains_key(&account_id), "Soulbound for account already exists");
-
+        let metadata = NFTContractMetadata::new(metadata);
         let init_args = serde_json::to_vec(&SoulboundInitArgs {
+            owner_id: env::predecessor_account_id(),
             metadata: metadata.clone(),
-            owner_id: account_id
         }).unwrap();
 
         let sb_account_id = AccountId::from_str(&*format!("{}.{}", metadata.name,
@@ -63,20 +84,39 @@ impl InsoulCore {
             .create_account()
             .add_full_access_key(self.admin_public_key.clone())
             .deploy_contract(include_bytes!("../../wasm/soulbound.wasm").to_vec())
-            // TODO: replace zero gas const
-            .function_call("new".to_string(), init_args, 0, Gas::from(0))
-            .then(self::on_create(
+            .function_call("new".to_string(), init_args, 0, gas::CREATE_SOULBOUND)
+            .then(Self::ext(env::current_account_id())
+                .with_static_gas(gas::ON_CREATE_CALLBACK)
+                .on_create(
                 env::predecessor_account_id(),
                 metadata,
-                account_id.clone(),
-                sb_account_id
+                env::predecessor_account_id(),
+                sb_account_id,
             ))
-    }
-
-    pub fn get_soulbound(&self, account_id: AccountId) -> Option<AccountId> {
-        return self.soulbounds.get(&account_id);
     }
 }
 
-#[cfg(test)]
-mod tests;
+pub trait New {
+    fn new(arg: Self) -> Self;
+}
+
+impl New for NFTContractMetadata {
+    fn new(args: NFTContractMetadata) -> Self {
+        let store_account = format!("{}.{}", args.name, env::current_account_id());
+        assert!(
+            env::is_valid_account_id(store_account.as_bytes()),
+            "Invalid character in store id"
+        );
+        assert!(args.symbol.len() <= 6);
+
+        Self {
+            spec: args.spec,
+            name: args.name,
+            symbol: args.symbol,
+            icon: args.icon,
+            base_uri: args.base_uri,
+            reference: args.reference,
+            reference_hash: args.reference_hash,
+        }
+    }
+}

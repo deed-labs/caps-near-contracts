@@ -5,14 +5,13 @@ use near_sdk::borsh::{
     BorshDeserialize,
     BorshSerialize,
 };
-use near_sdk::serde::{
+use serde::{
     Deserialize,
     Serialize,
 };
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[cfg_attr(feature = "wasm", derive(BorshDeserialize, BorshSerialize))]
+#[derive(Clone, Debug, Deserialize, Serialize, BorshDeserialize, BorshSerialize)]
 pub struct SoulboundInitArgs {
+    pub owner_id: AccountId,
     pub metadata: NFTContractMetadata,
-    pub owner_id: AccountId
 }
