@@ -3,7 +3,7 @@ pub use core_interfaces::*;
 mod core_interfaces {
     use near_contract_standards::non_fungible_token::metadata::NFTContractMetadata;
     use near_sdk::AccountId;
-    use near_sdk::ext_contract;
+    use near_sdk::{self, ext_contract};
 
     #[ext_contract(core_self)]
     pub trait OnCreateCallback {

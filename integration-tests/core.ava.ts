@@ -16,8 +16,9 @@ test.beforeEach(async (t) => {
 
   // FIXME: replace soul token account with actual deployed contract id
   const soulToken = await root.createSubAccount("soul", {
-    initialBalance: NEAR.parse("30 N").toJSON(),
+    initialBalance: NEAR.parse("50 N").toJSON(),
   });
+
   const contract = await root.devDeploy(
     "./wasm/insoul_core.wasm",
     { method: "new", args: {soul_token_id: soulToken}, initialBalance: NEAR.parse("30 N").toJSON() }
@@ -25,13 +26,13 @@ test.beforeEach(async (t) => {
 
   // some test accounts
   const alice = await root.createSubAccount("alice", {
-    initialBalance: NEAR.parse("30 N").toJSON(),
+    initialBalance: NEAR.parse("50 N").toJSON(),
   });
   const bob = await root.createSubAccount("bob", {
-    initialBalance: NEAR.parse("30 N").toJSON(),
+    initialBalance: NEAR.parse("50 N").toJSON(),
   });
   const charlie = await root.createSubAccount("charlie", {
-    initialBalance: NEAR.parse("30 N").toJSON(),
+    initialBalance: NEAR.parse("50 N").toJSON(),
   });
 
   // Save state for test runs, it is unique for each test
@@ -48,12 +49,12 @@ test.afterEach(async (t) => {
 
 test("create soulbound", async (t) => {
   const { contract, alice } = t.context.accounts;
+
   await alice.call(contract, "create_soulbound",
       {
-        metadata: { spec: "sbt-1.0", name: "john_snow", symbol: "JSSB" }
+        metadata: { spec: "nft-1.0.0", name: "john_snow", symbol: "JSSB" }
       },
       { gas: DEPLOY_SOULBOUND_GAS }
   ).catch(failPromiseRejection(t, "creating soulbound"));
-
 });
 

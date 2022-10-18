@@ -2,19 +2,23 @@ use std::str::FromStr;
 use near_contract_standards::non_fungible_token::metadata::NFTContractMetadata;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LookupMap;
-use near_sdk::{env, near_bindgen, AccountId, Promise, PublicKey, Gas, assert_one_yocto, is_promise_success};
+use near_sdk::{env, near_bindgen, AccountId, Promise, PublicKey, assert_one_yocto, is_promise_success, require, Balance};
 use deps::common::{SoulboundInitArgs};
-use deps::constants::gas;
+use deps::constants::{gas, storage_cost, YOCTO_PER_BYTE};
 use deps::interfaces::core_self;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct InsoulCore {
     pub owner_id: AccountId,
+    pub admin_public_key: PublicKey,
     pub soul_token_id: AccountId,
+    pub storage_price_per_byte: u128,
+    pub soulbound_cost: u128,
     pub soulbounds: LookupMap<AccountId, AccountId>,
-    pub admin_public_key: PublicKey
 }
+
+const SOULBOUND_CODE: &[u8] = include_bytes!("../../wasm/soulbound.wasm");
 
 impl Default for InsoulCore {
     fn default() -> Self {
@@ -48,8 +52,10 @@ impl InsoulCore {
         Self {
             owner_id: env::predecessor_account_id(),
             soul_token_id,
-            soulbounds: LookupMap::new(b"r".to_vec()),
             admin_public_key: env::signer_account_pk(),
+            storage_price_per_byte: YOCTO_PER_BYTE,
+            soulbound_cost: storage_cost::STORE,
+            soulbounds: LookupMap::new(b"r".to_vec()),
         }
     }
 
@@ -80,19 +86,23 @@ impl InsoulCore {
         let sb_account_id = AccountId::from_str(&*format!("{}.{}", metadata.name,
                                                           env::current_account_id())).unwrap();
 
-        Promise::new(sb_account_id.clone())
+        let promise = Promise::new(sb_account_id.clone())
             .create_account()
-            .add_full_access_key(self.admin_public_key.clone())
-            .deploy_contract(include_bytes!("../../wasm/soulbound.wasm").to_vec())
-            .function_call("new".to_string(), init_args, 0, gas::CREATE_SOULBOUND)
-            .then(Self::ext(env::current_account_id())
-                .with_static_gas(gas::ON_CREATE_CALLBACK)
-                .on_create(
+            .transfer(self.soulbound_cost)
+            .deploy_contract(SOULBOUND_CODE.to_vec())
+            .add_full_access_key(env::signer_account_pk())
+            .function_call("new".to_string(), init_args, 0, gas::CREATE_SOULBOUND);
+
+        promise.then(
+        core_self::ext(env::current_account_id())
+            .with_static_gas(gas::ON_CREATE_CALLBACK)
+            .on_create(
                 env::predecessor_account_id(),
                 metadata,
                 env::predecessor_account_id(),
-                sb_account_id,
-            ))
+                sb_account_id
+            )
+        )
     }
 }
 
@@ -102,10 +112,10 @@ pub trait New {
 
 impl New for NFTContractMetadata {
     fn new(args: NFTContractMetadata) -> Self {
-        let store_account = format!("{}.{}", args.name, env::current_account_id());
+        let soulbound_account = format!("{}.{}", args.name, env::current_account_id());
         assert!(
-            env::is_valid_account_id(store_account.as_bytes()),
-            "Invalid character in store id"
+            env::is_valid_account_id(soulbound_account.as_bytes()),
+            "Invalid character in soulbound name"
         );
         assert!(args.symbol.len() <= 6);
 

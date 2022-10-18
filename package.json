@@ -10,7 +10,7 @@
     "start": "npm run build && npm run build:web && env-cmd -f ./neardev/dev-account.env parcel ./frontend/index.html",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "cargo test -- --nocapture",
-    "test:integration": "npm run build && npm run postbuild && ava --verbose ./integration-tests/*.ava.ts"
+    "test:integration": "npm run build && npm run postbuild && ava --verbose"
   },
   "repository": {
     "type": "git",
