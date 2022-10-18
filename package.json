@@ -4,20 +4,17 @@
   "description": "",
   "scripts": {
     "build": "rustup target add wasm32-unknown-unknown && cargo build --target wasm32-unknown-unknown --release",
-    "build:web": "parcel build ./frontend/index.html --public-url ./ --no-minify",
     "postbuild": "mkdir -p ./wasm/ && cp -rf ./target/wasm32-unknown-unknown/release/*.wasm ./wasm/",
     "deploy:dev": "npm run build && near dev-deploy res/status_message.wasm",
     "dev": "npm run deploy:dev && npm start",
     "start": "npm run build && npm run build:web && env-cmd -f ./neardev/dev-account.env parcel ./frontend/index.html",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "cargo test -- --nocapture",
-    "test:integration": "npm run test:integration:rs && npm run test:integration:ts",
-    "test:integration:rs": "npm run build && npm run postbuild && cd integration-tests/rs && cargo run --example integration-tests",
-    "test:integration:ts": "npm run build && npm run postbuild && ava --verbose"
+    "test:integration": "npm run build && npm run postbuild && ava --verbose"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/near-examples/rust-status-message.git"
+    "url": "git+https://github.com/project-insoul/insoul-contracts.git"
   },
   "keywords": [
     "near-protocol",
@@ -25,20 +22,13 @@
     "rust",
     "smart-contract"
   ],
-  "author": "Mike Purvis",
   "license": "(MIT AND Apache-2.0)",
-  "bugs": {
-    "url": "https://github.com/near-examples/rust-status-message/issues"
-  },
-  "homepage": "https://github.com/near-examples/rust-status-message#readme",
   "dependencies": {
     "big.js": "^5.2.2",
     "borsh": "^0.4.0",
     "env-cmd": "^10.1.0",
     "near-api-js": "^0.43.1",
     "prop-types": "^15.7.2",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
     "regenerator-runtime": "^0.13.9"
   },
   "devDependencies": {
