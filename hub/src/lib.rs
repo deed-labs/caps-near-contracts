@@ -12,7 +12,6 @@ use deps::interfaces::core_self;
 pub struct Hub {
     pub owner_id: AccountId,
     pub admin_public_key: PublicKey,
-    pub soul_token_id: AccountId,
     pub storage_price_per_byte: u128,
     pub soulbound_cost: u128,
     pub soulbounds: LookupMap<AccountId, AccountId>,
@@ -46,12 +45,11 @@ impl Hub {
     }
 
     #[init]
-    pub fn new(soul_token_id: AccountId) -> Self {
+    pub fn new() -> Self {
         assert!(!env::state_exists(), "Already initialized");
 
         Self {
             owner_id: env::predecessor_account_id(),
-            soul_token_id,
             admin_public_key: env::signer_account_pk(),
             storage_price_per_byte: YOCTO_PER_BYTE,
             soulbound_cost: storage_cost::STORE,

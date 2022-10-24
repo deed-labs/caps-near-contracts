@@ -1,15 +1,16 @@
 use near_contract_standards::non_fungible_token::core::NonFungibleTokenCore;
 use near_contract_standards::non_fungible_token::metadata::{NFTContractMetadata, NonFungibleTokenMetadataProvider};
 use near_contract_standards::non_fungible_token::{NonFungibleToken, Token, TokenId};
-use near_sdk::{AccountId, env, near_bindgen, PanicOnDefault, Promise, PromiseOrValue, BorshStorageKey};
+use near_sdk::{AccountId, env, near_bindgen, PanicOnDefault, Promise, PromiseOrValue, BorshStorageKey, Balance};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::LazyOption;
+use near_sdk::collections::{LazyOption, UnorderedMap};
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct Soulbound {
     token: NonFungibleToken,
-    metadata: LazyOption<NFTContractMetadata>
+    metadata: LazyOption<NFTContractMetadata>,
+    donors: UnorderedMap<AccountId, Balance>
 }
 
 #[derive(BorshSerialize, BorshStorageKey)]
@@ -36,8 +37,20 @@ impl Soulbound {
                 Some(StorageKey::Enumeration),
                 Some(StorageKey::Approval)
             ),
-            metadata: LazyOption::new(StorageKey::TokenMetadata, Some(&metadata))
+            metadata: LazyOption::new(StorageKey::TokenMetadata, Some(&metadata)),
+            donors: UnorderedMap::new(b"d".to_vec()),
         }
+    }
+
+    #[payable]
+    pub fn donate(&mut self) {
+        let mut sum = match self.donors.get(&env::predecessor_account_id()) {
+            Some(v) => v,
+            None => Balance::from(0),
+        };
+        sum += env::attached_deposit();
+
+        self.donors.insert(&env::predecessor_account_id(), &sum);
     }
 }
 

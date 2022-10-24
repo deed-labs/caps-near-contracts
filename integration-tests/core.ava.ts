@@ -14,14 +14,9 @@ test.beforeEach(async (t) => {
   // deploy contract
   const root = worker.rootAccount;
 
-  // FIXME: replace soul token account with actual deployed contract id
-  const soulToken = await root.createSubAccount("soul", {
-    initialBalance: NEAR.parse("50 N").toJSON(),
-  });
-
   const contract = await root.devDeploy(
     "./wasm/hub.wasm",
-    { method: "new", args: {soul_token_id: soulToken}, initialBalance: NEAR.parse("30 N").toJSON() }
+    { method: "new", args: {}, initialBalance: NEAR.parse("30 N").toJSON() }
   );
 
   // some test accounts
