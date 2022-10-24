@@ -1,13 +1,18 @@
 [package]
-name = "soul_token"
+name = "hub"
 version = "0.1.0"
-edition = "2021"
+authors = ["Near Inc <hello@nearprotocol.com>"]
+edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+serde = { version = "*", features = ["derive"] }
+serde_json = "*"
 near-sdk = "4.0.0"
 near-contract-standards = "4.0.0"
+deps = { path = "../deps", feature = "core-wasm" }
 
 [profile.release]
 codegen-units = 1

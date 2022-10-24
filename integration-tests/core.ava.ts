@@ -20,7 +20,7 @@ test.beforeEach(async (t) => {
   });
 
   const contract = await root.devDeploy(
-    "./wasm/insoul_core.wasm",
+    "./wasm/hub.wasm",
     { method: "new", args: {soul_token_id: soulToken}, initialBalance: NEAR.parse("30 N").toJSON() }
   );
 
