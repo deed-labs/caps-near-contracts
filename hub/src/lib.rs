@@ -9,7 +9,7 @@ use deps::interfaces::core_self;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct InsoulCore {
+pub struct Hub {
     pub owner_id: AccountId,
     pub admin_public_key: PublicKey,
     pub soul_token_id: AccountId,
@@ -20,14 +20,14 @@ pub struct InsoulCore {
 
 const SOULBOUND_CODE: &[u8] = include_bytes!("../../wasm/soulbound.wasm");
 
-impl Default for InsoulCore {
+impl Default for Hub {
     fn default() -> Self {
         env::panic_str("Not implemented yet");
     }
 }
 
 #[near_bindgen]
-impl InsoulCore {
+impl Hub {
     pub fn assert_only_owner(&self) {
         assert_one_yocto();
         assert_eq!(
