@@ -46,7 +46,7 @@ impl Soulbound {
     pub fn donate(&mut self) {
         let mut sum = match self.donors.get(&env::predecessor_account_id()) {
             Some(v) => v,
-            None => Balance::from(0),
+            None => 0,
         };
         sum += env::attached_deposit();
 

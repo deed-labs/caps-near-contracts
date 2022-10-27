@@ -2,9 +2,10 @@ use std::str::FromStr;
 use near_contract_standards::non_fungible_token::metadata::NFTContractMetadata;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LookupMap;
-use near_sdk::{env, near_bindgen, AccountId, Promise, PublicKey, assert_one_yocto, is_promise_success, require, Balance};
+use near_sdk::{env, near_bindgen, AccountId, Promise, PublicKey, assert_one_yocto, is_promise_success, Balance};
+use near_sdk::json_types::U128;
 use deps::common::{SoulboundInitArgs};
-use deps::constants::{gas, storage_cost, YOCTO_PER_BYTE};
+use deps::constants::{gas, storage_bytes, storage_cost, YOCTO_PER_BYTE};
 use deps::interfaces::core_self;
 
 #[near_bindgen]
@@ -12,6 +13,7 @@ use deps::interfaces::core_self;
 pub struct Hub {
     pub owner_id: AccountId,
     pub admin_public_key: PublicKey,
+    pub hub_fee: Balance,
     pub storage_price_per_byte: u128,
     pub soulbound_cost: u128,
     pub soulbounds: LookupMap<AccountId, AccountId>,
@@ -36,12 +38,28 @@ impl Hub {
         );
     }
 
+    pub fn assert_sufficient_attached_deposit(&self) {
+        let min = storage_bytes::SOULBOUND as u128 * self.storage_price_per_byte + self.hub_fee;
+        assert!(
+            env::attached_deposit() >= min,
+            "Not enough attached deposit to complete store deployment. Need: {}, got: {}",
+            min,
+            env::attached_deposit()
+        );
+    }
+
     /// Only one `Soulbound` can be created and linked to the account.
     pub fn assert_soulbound_not_exists(&self) {
         assert!(
             !self.soulbounds.contains_key(&env::predecessor_account_id()),
             "Soulbound for the account already exists"
         );
+    }
+
+    #[payable]
+    pub fn set_hub_fee(&mut self, amount: U128) {
+        self.assert_only_owner();
+        self.hub_fee = amount.into();
     }
 
     #[init]
@@ -51,6 +69,7 @@ impl Hub {
         Self {
             owner_id: env::predecessor_account_id(),
             admin_public_key: env::signer_account_pk(),
+            hub_fee: 0,
             storage_price_per_byte: YOCTO_PER_BYTE,
             soulbound_cost: storage_cost::STORE,
             soulbounds: LookupMap::new(b"r".to_vec()),
@@ -61,17 +80,22 @@ impl Hub {
     pub fn on_create(
         &mut self,
         sb_creator_id: AccountId,
-        metadata: NFTContractMetadata,
-        owner_id: AccountId,
-        sb_account_id: AccountId
+        sb_account_id: AccountId,
+        attached_deposit: U128
     ) {
+        let attached_deposit: u128 = attached_deposit.into();
         if is_promise_success() {
             self.soulbounds.insert(&sb_creator_id, &sb_account_id);
+            Promise::new(self.owner_id.to_string().parse().unwrap())
+                .transfer(attached_deposit - self.soulbound_cost);
        } else {
-           env::panic_str("soulbound deployment failed");
+            Promise::new(sb_creator_id)
+                .transfer(attached_deposit - self.soulbound_cost);
+           env::log_str("soulbound deployment failed");
        }
     }
 
+    #[payable]
     pub fn create_soulbound(&mut self, metadata: NFTContractMetadata) -> Promise {
         self.assert_soulbound_not_exists();
 
@@ -96,9 +120,8 @@ impl Hub {
             .with_static_gas(gas::ON_CREATE_CALLBACK)
             .on_create(
                 env::predecessor_account_id(),
-                metadata,
-                env::predecessor_account_id(),
-                sb_account_id
+                sb_account_id,
+                env::attached_deposit().into()
             )
         )
     }
