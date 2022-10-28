@@ -15,3 +15,8 @@ pub struct SoulboundInitArgs {
     pub owner_id: AccountId,
     pub metadata: NFTContractMetadata,
 }
+
+#[derive(Clone, Debug, Deserialize, Serialize, BorshDeserialize, BorshSerialize)]
+pub struct SoulboundUpdateArgs {
+    pub metadata: NFTContractMetadata,
+}

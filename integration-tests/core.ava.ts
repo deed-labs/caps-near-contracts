@@ -1,6 +1,6 @@
 import { Worker, NEAR, NearAccount } from "near-workspaces";
 import anyTest, { TestFn } from "ava";
-import {DEPLOY_SOULBOUND_GAS, failPromiseRejection} from "./utils";
+import {SOULBOUND_GAS, failPromiseRejection} from "./utils";
 
 const test = anyTest as TestFn<{
   worker: Worker;
@@ -49,7 +49,17 @@ test("create soulbound", async (t) => {
       {
         metadata: { spec: "nft-1.0.0", name: "john_snow", symbol: "JSSB" }
       },
-      { gas: DEPLOY_SOULBOUND_GAS }
+      { gas: SOULBOUND_GAS }
   ).catch(failPromiseRejection(t, "creating soulbound"));
 });
 
+test("update soulbound", async (t) => {
+  const { contract, alice } = t.context.accounts;
+
+  await alice.call(contract, "update_soulbound",
+      {
+        metadata: { spec: "nft-1.0.0", name: "john_snow", symbol: "JSSB", bio: "born Aegon Targaryen, is the son of Lyanna Stark and Rhaegar Targaryen, the late Prince of Dragonstone." }
+      },
+      { gas:  SOULBOUND_GAS }
+  ).catch(failPromiseRejection(t, "updating soulbound"));
+})

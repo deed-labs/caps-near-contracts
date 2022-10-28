@@ -5,6 +5,7 @@ use near_sdk::collections::LookupMap;
 use near_sdk::{env, near_bindgen, AccountId, Promise, PublicKey, assert_one_yocto, is_promise_success, Balance};
 use near_sdk::json_types::U128;
 use deps::common::{SoulboundInitArgs};
+use deps::common::soulbound_init_args::SoulboundUpdateArgs;
 use deps::constants::{gas, storage_bytes, storage_cost, YOCTO_PER_BYTE};
 use deps::interfaces::core_self;
 
@@ -53,6 +54,13 @@ impl Hub {
         assert!(
             !self.soulbounds.contains_key(&env::predecessor_account_id()),
             "Soulbound for the account already exists"
+        );
+    }
+
+    pub fn assert_soulbound_exists(&self) {
+        assert!(
+            self.soulbounds.contains_key(&env::predecessor_account_id()),
+            "Soulbound for the account not exists"
         );
     }
 
@@ -124,6 +132,21 @@ impl Hub {
                 env::attached_deposit().into()
             )
         )
+    }
+
+    #[payable]
+    pub fn update_soulbound(&mut self, metadata: NFTContractMetadata) -> Promise {
+        self.assert_soulbound_exists();
+
+        let metadata = NFTContractMetadata::new(metadata);
+        let update_args = serde_json::to_vec(&SoulboundUpdateArgs {
+            metadata: metadata.clone(),
+        }).unwrap();
+
+        let sb_account_id = self.soulbounds.get(&env::predecessor_account_id()).unwrap();
+
+        Promise::new(sb_account_id)
+            .function_call("update_metadata".to_string(), update_args, 0, gas::UPDATE_SOULBOUND)
     }
 }
 

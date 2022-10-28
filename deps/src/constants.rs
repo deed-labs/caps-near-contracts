@@ -12,6 +12,7 @@ pub mod gas {
     }
 
     pub const CREATE_SOULBOUND: Gas = gas(70);
+    pub const UPDATE_SOULBOUND: Gas = gas(10);
 
     pub const ON_CREATE_CALLBACK: Gas = gas(10);
 }

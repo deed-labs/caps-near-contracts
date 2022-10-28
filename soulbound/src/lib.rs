@@ -7,7 +7,7 @@ use near_sdk::collections::{LazyOption, UnorderedMap};
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
-pub struct Soulbound {
+pub struct SBT {
     token: NonFungibleToken,
     metadata: LazyOption<NFTContractMetadata>,
     donors: UnorderedMap<AccountId, Balance>
@@ -23,7 +23,7 @@ enum StorageKey {
 }
 
 #[near_bindgen]
-impl Soulbound {
+impl SBT {
     #[init]
     pub fn new(owner_id: AccountId, metadata: NFTContractMetadata) -> Self {
         assert!(!env::state_exists());
@@ -42,6 +42,11 @@ impl Soulbound {
         }
     }
 
+    pub fn update_metadata(&mut self, metadata: NFTContractMetadata) {
+        metadata.assert_valid();
+        self.metadata.set(&metadata);
+    }
+
     #[payable]
     pub fn donate(&mut self) {
         let mut sum = match self.donors.get(&env::predecessor_account_id()) {
@@ -58,7 +63,7 @@ impl Soulbound {
  * Implement NonFungibleTokenCore for the Soulbound contract
  * to suppress token transfer.
  */
-impl NonFungibleTokenCore for Soulbound {
+impl NonFungibleTokenCore for SBT {
     fn nft_transfer(&mut self, _: AccountId, _: TokenId, _: Option<u64>, _: Option<String>) {
         env::panic_str("Soulbound can not be transferred");
     }
@@ -72,11 +77,11 @@ impl NonFungibleTokenCore for Soulbound {
     }
 }
 
-near_contract_standards::impl_non_fungible_token_approval!(Soulbound, token);
-near_contract_standards::impl_non_fungible_token_enumeration!(Soulbound, token);
+near_contract_standards::impl_non_fungible_token_approval!(SBT, token);
+near_contract_standards::impl_non_fungible_token_enumeration!(SBT, token);
 
 #[near_bindgen]
-impl NonFungibleTokenMetadataProvider for Soulbound {
+impl NonFungibleTokenMetadataProvider for SBT {
     fn nft_metadata(&self) -> NFTContractMetadata {
         self.metadata.get().unwrap()
     }
