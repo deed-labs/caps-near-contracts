@@ -106,6 +106,7 @@ impl Hub {
     #[payable]
     pub fn create_soulbound(&mut self, metadata: NFTContractMetadata) -> Promise {
         self.assert_soulbound_not_exists();
+        self.assert_sufficient_attached_deposit();
 
         let metadata = NFTContractMetadata::new(metadata);
         let init_args = serde_json::to_vec(&SoulboundInitArgs {
