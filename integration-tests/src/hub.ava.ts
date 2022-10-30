@@ -63,12 +63,34 @@ test("update soulbound", async (t) => {
       { attachedDeposit: SOULBOUND_COST, gas: SOULBOUND_GAS }
   ).catch(failPromiseRejection(t, "creating bob soulbound"));
 
+  // TODO: add profile info json to reference field
+  const new_metadata = {
+      spec: "nft-1.0.0",
+      name: "john_snow",
+      symbol: "JSSB",
+  };
+
   await bob.call(hub, "update_soulbound",
       {
-        metadata: { spec: "nft-1.0.0", name: "john_snow", symbol: "JSSB", bio: "born Aegon Targaryen, is the son of Lyanna Stark and Rhaegar Targaryen, the late Prince of Dragonstone." }
+        metadata: new_metadata,
       },
       { attachedDeposit: SOULBOUND_COST, gas: SOULBOUND_GAS }
   ).catch(failPromiseRejection(t, "updating bob soulbound"));
 
-  const profile = await root.getAccount(`bob.${hub.accountId}`);
+  const sbtId: string = await hub.view('get_soulbound_id_for_account', {account_id: bob.accountId});
+  const profile = root.getAccount(sbtId);
+  const metadata = await profile.view('get_metadata');
+
+  console.log(metadata);
+
+  t.deepEqual(
+      {
+        ...new_metadata,
+        base_uri: null,
+        icon: null,
+        reference: null,
+        reference_hash: null
+      },
+      metadata
+  )
 })

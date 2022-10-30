@@ -149,6 +149,10 @@ impl Hub {
         Promise::new(sb_account_id)
             .function_call("update_metadata".to_string(), update_args, 0, gas::UPDATE_SOULBOUND)
     }
+
+    pub fn get_soulbound_id_for_account(&self, account_id: AccountId) -> AccountId {
+        self.soulbounds.get(&account_id).unwrap_or_else(|| env::panic_str("Not found"))
+    }
 }
 
 pub trait New {

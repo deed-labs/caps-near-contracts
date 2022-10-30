@@ -47,6 +47,10 @@ impl SBT {
         self.metadata.set(&metadata);
     }
 
+    pub fn get_metadata(&self) -> NFTContractMetadata {
+        self.metadata.get().unwrap()
+    }
+
     #[payable]
     pub fn donate(&mut self) {
         let mut sum = match self.donors.get(&env::predecessor_account_id()) {
@@ -79,10 +83,3 @@ impl NonFungibleTokenCore for SBT {
 
 near_contract_standards::impl_non_fungible_token_approval!(SBT, token);
 near_contract_standards::impl_non_fungible_token_enumeration!(SBT, token);
-
-#[near_bindgen]
-impl NonFungibleTokenMetadataProvider for SBT {
-    fn nft_metadata(&self) -> NFTContractMetadata {
-        self.metadata.get().unwrap()
-    }
-}
