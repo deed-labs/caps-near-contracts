@@ -108,14 +108,20 @@ impl Hub {
         self.assert_soulbound_not_exists();
         self.assert_sufficient_attached_deposit();
 
-        let metadata = NFTContractMetadata::new(metadata);
+        let sb_account_id = AccountId::from_str(
+            &*format!("{}.{}",
+                      env::predecessor_account_id().to_string().split(".").next().unwrap(),
+                      env::current_account_id())
+        ).unwrap();
+        assert!(
+            env::is_valid_account_id(sb_account_id.as_bytes()),
+            "Invalid character in soulbound name"
+        );
+
         let init_args = serde_json::to_vec(&SoulboundInitArgs {
             owner_id: env::predecessor_account_id(),
             metadata: metadata.clone(),
         }).unwrap();
-
-        let sb_account_id = AccountId::from_str(&*format!("{}.{}", metadata.name,
-                                                          env::current_account_id())).unwrap();
 
         let promise = Promise::new(sb_account_id.clone())
             .create_account()
@@ -139,12 +145,11 @@ impl Hub {
     pub fn update_soulbound(&mut self, metadata: NFTContractMetadata) -> Promise {
         self.assert_soulbound_exists();
 
-        let metadata = NFTContractMetadata::new(metadata);
+        let sb_account_id = self.soulbounds.get(&env::predecessor_account_id()).unwrap();
+
         let update_args = serde_json::to_vec(&SoulboundUpdateArgs {
             metadata: metadata.clone(),
         }).unwrap();
-
-        let sb_account_id = self.soulbounds.get(&env::predecessor_account_id()).unwrap();
 
         Promise::new(sb_account_id)
             .function_call("update_metadata".to_string(), update_args, 0, gas::UPDATE_SOULBOUND)
@@ -152,30 +157,5 @@ impl Hub {
 
     pub fn get_soulbound_id_for_account(&self, account_id: AccountId) -> AccountId {
         self.soulbounds.get(&account_id).unwrap_or_else(|| env::panic_str("Not found"))
-    }
-}
-
-pub trait New {
-    fn new(arg: Self) -> Self;
-}
-
-impl New for NFTContractMetadata {
-    fn new(args: NFTContractMetadata) -> Self {
-        let soulbound_account = format!("{}.{}", args.name, env::current_account_id());
-        assert!(
-            env::is_valid_account_id(soulbound_account.as_bytes()),
-            "Invalid character in soulbound name"
-        );
-        assert!(args.symbol.len() <= 6);
-
-        Self {
-            spec: args.spec,
-            name: args.name,
-            symbol: args.symbol,
-            icon: args.icon,
-            base_uri: args.base_uri,
-            reference: args.reference,
-            reference_hash: args.reference_hash,
-        }
     }
 }

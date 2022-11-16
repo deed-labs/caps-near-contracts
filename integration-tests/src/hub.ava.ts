@@ -47,7 +47,7 @@ test("create soulbound", async (t) => {
 
   await alice.call(hub, "create_soulbound",
       {
-        metadata: { spec: "nft-1.0.0", name: "john_snow", symbol: "JSSB" }
+        metadata: { spec: "nft-1.0.0", name: "John Snow", symbol: "JSSB" }
       },
       { attachedDeposit: SOULBOUND_COST, gas: SOULBOUND_GAS }
   ).catch(failPromiseRejection(t, "creating alice soulbound"));
@@ -58,7 +58,7 @@ test("update soulbound", async (t) => {
 
   await bob.call(hub, "create_soulbound",
       {
-        metadata: { spec: "nft-1.0.0", name: "bob", symbol: "BOB" }
+        metadata: { spec: "nft-1.0.0", name: "Bob Marley", symbol: "BOB" }
       },
       { attachedDeposit: SOULBOUND_COST, gas: SOULBOUND_GAS }
   ).catch(failPromiseRejection(t, "creating bob soulbound"));
@@ -66,7 +66,7 @@ test("update soulbound", async (t) => {
   // TODO: add profile info json to reference field
   const new_metadata = {
       spec: "nft-1.0.0",
-      name: "john_snow",
+      name: "John Snow",
       symbol: "JSSB",
   };
 
@@ -80,8 +80,6 @@ test("update soulbound", async (t) => {
   const sbtId: string = await hub.view('get_soulbound_id_for_account', {account_id: bob.accountId});
   const profile = root.getAccount(sbtId);
   const metadata = await profile.view('get_metadata');
-
-  console.log(metadata);
 
   t.deepEqual(
       {
