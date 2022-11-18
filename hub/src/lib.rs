@@ -79,7 +79,7 @@ impl Hub {
             admin_public_key: env::signer_account_pk(),
             hub_fee: 0,
             storage_price_per_byte: YOCTO_PER_BYTE,
-            soulbound_cost: storage_cost::STORE,
+            soulbound_cost: storage_cost::SOULBOUND,
             soulbounds: LookupMap::new(b"r".to_vec()),
         }
     }

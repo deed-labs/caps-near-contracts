@@ -33,5 +33,5 @@ pub mod storage_cost {
         (bytes as Balance) * YOCTO_PER_BYTE
     }
 
-    pub const STORE: Balance = bytes_to_cost(super::storage_bytes::SOULBOUND);
+    pub const SOULBOUND: Balance = bytes_to_cost(super::storage_bytes::SOULBOUND);
 }
