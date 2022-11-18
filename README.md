@@ -1,4 +1,4 @@
-Insoul contracts
+CAPS core contracts
 ================
 
 ## Prerequisites
@@ -47,11 +47,6 @@ Run this command to build and place the wasm file in the `res` directory:
 npm run build
 ```
 
-**Note**: Instead of `npm`, users of [yarn](https://yarnpkg.com) may run:
-```bash
-yarn build
-```
-
 ### Important
 If you encounter an error similar to:
 >note: the `wasm32-unknown-unknown` target may not be installed
@@ -64,37 +59,11 @@ rustup target add wasm32-unknown-unknown
 
 ## Using this contract
 
-### Web app
-
-Deploy the smart contract to a specific account created with the NEAR Wallet. Then interact with the smart contract using near-api-js on the frontend.
-
-If you do not have a NEAR account, please create one with [NEAR Wallet](https://wallet.testnet.near.org).
-
-Make sure you have credentials saved locally for the account you want to deploy the contract to. To perform this run the following `near-cli` command:
-
-```
-near login
-```
-
-Deploy the contract to your NEAR account:
-
-```bash
-near deploy --wasmFile res/status_message.wasm --accountId YOUR_ACCOUNT_NAME
-```
-
-Build the frontend:
-
-```bash
-npm start
-```
-
-If all is successful the app should be live at `localhost:1234`!
-
 ### Quickest deploy
-Build and deploy this smart contract to an development account. This development account will be created automatically and is not intended to be permanent. Please see the "Standard deploy" section for creating a more personalized account to deploy to.
+Build and deploy this smart contract to a development account. This development account will be created automatically and is not intended to be permanent. Please see the "Standard deploy" section for creating a more personalized account to deploy to.
 
 ```bash
-near dev-deploy --wasmFile res/status_message.wasm --helperUrl https://near-contract-helper.onrender.com
+near dev-deploy --wasmFile wasm/hub.wasm --helperUrl https://near-contract-helper.onrender.com
 ```
 
 Behind the scenes, this is creating an account and deploying a contract to it. On the console, notice a message like:
@@ -113,18 +82,6 @@ You can tell if the environment variable is set correctly if your command line p
 echo $CONTRACT_NAME
 ```
 
-The next command will call the contract's `set_status` method:
-
-```bash
-near call $CONTRACT_NAME set_status '{"message": "aloha!"}' --accountId $CONTRACT_NAME
-```
-
-To retrieve the message from the contract, call `get_status` with the following:
-
-```bash
-near view $CONTRACT_NAME get_status '{"account_id": "'$CONTRACT_NAME'"}'
-```
-
 ### Standard deploy
 In this option, the smart contract will get deployed to a specific account created with the NEAR Wallet.
 
@@ -139,48 +96,15 @@ near login
 Deploy the contract:
 
 ```bash
-near deploy --wasmFile res/status_message.wasm --accountId YOUR_ACCOUNT_NAME
-```
-
-Set a status for your account:
-
-```bash
-near call YOUR_ACCOUNT_NAME set_status '{"message": "aloha friend"}' --accountId YOUR_ACCOUNT_NAME
-```
-
-Get the status:
-
-```bash
-near view YOUR_ACCOUNT_NAME get_status '{"account_id": "YOUR_ACCOUNT_NAME"}'
-```
-
-Note that these status messages are stored per account in a `HashMap`. See `src/lib.rs` for the code. We can try the same steps with another account to verify.
-**Note**: we're adding `NEW_ACCOUNT_NAME` for the next couple steps.
-
-There are two ways to create a new account:
- - the NEAR Wallet (as we did before)
- - `near create_account NEW_ACCOUNT_NAME --masterAccount YOUR_ACCOUNT_NAME`
-
-Now call the contract on the first account (where it's deployed):
-
-```bash
-near call YOUR_ACCOUNT_NAME set_status '{"message": "bonjour"}' --accountId NEW_ACCOUNT_NAME
-```
-
-```bash
-near view YOUR_ACCOUNT_NAME get_status '{"account_id": "NEW_ACCOUNT_NAME"}'
-```
-
-Returns `bonjour`.
-
-Make sure the original status remains:
-
-```bash
-near view YOUR_ACCOUNT_NAME get_status '{"account_id": "YOUR_ACCOUNT_NAME"}'
+near deploy --wasmFile wasm/hub.wasm --accountId YOUR_ACCOUNT_NAME
 ```
 
 ## Testing
 To test run:
 ```bash
-cargo test --package status-message -- --nocapture
+cd integration-tests
+```
+
+```bash
+npm run test
 ```
