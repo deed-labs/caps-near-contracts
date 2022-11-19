@@ -1,6 +1,6 @@
 import { Worker, NEAR, NearAccount } from "near-workspaces";
 import anyTest, { TestFn } from "ava";
-import {SOULBOUND_GAS, failPromiseRejection, SOULBOUND_COST} from "./utils";
+import {SOULBOUND_GAS, failPromiseRejection, SOULBOUND_CREATE_COST, SOULBOUND_UPDATE_COST} from "./utils";
 
 const test = anyTest as TestFn<{
   worker: Worker;
@@ -49,7 +49,7 @@ test("create soulbound", async (t) => {
       {
         metadata: { spec: "nft-1.0.0", name: "John Snow", symbol: "JSSB" }
       },
-      { attachedDeposit: SOULBOUND_COST, gas: SOULBOUND_GAS }
+      { attachedDeposit: SOULBOUND_CREATE_COST, gas: SOULBOUND_GAS }
   ).catch(failPromiseRejection(t, "creating alice soulbound"));
 });
 
@@ -60,7 +60,7 @@ test("update soulbound", async (t) => {
       {
         metadata: { spec: "nft-1.0.0", name: "Bob Marley", symbol: "BOB" }
       },
-      { attachedDeposit: SOULBOUND_COST, gas: SOULBOUND_GAS }
+      { attachedDeposit: SOULBOUND_CREATE_COST, gas: SOULBOUND_GAS }
   ).catch(failPromiseRejection(t, "creating bob soulbound"));
 
   // TODO: add profile info json to reference field
@@ -74,7 +74,7 @@ test("update soulbound", async (t) => {
       {
         metadata: new_metadata,
       },
-      { attachedDeposit: SOULBOUND_COST, gas: SOULBOUND_GAS }
+      { attachedDeposit: SOULBOUND_UPDATE_COST, gas: SOULBOUND_GAS }
   ).catch(failPromiseRejection(t, "updating bob soulbound"));
 
   const sbtId: string = await hub.view('get_soulbound_id_for_account', {account_id: bob.accountId});
